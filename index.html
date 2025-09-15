@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SYPNOWEB — Complete</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+
+  <style>
+    /* ---------- Font ---------- */
+    @font-face {
+      font-family: "MyFont";
+      src: url("fonts/Dune_Rise.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --page-max: 700px;
+      --nav-height: 50px;
+      --nav-top-gap: 20px;
+      --title-gap: 12px;
+      --bg: #000;
+      --muted: #ccc;
+    }
+
+    /* ---------- Base ---------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Open Sans", Arial;
+      background: var(--bg);
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.4;
+      scroll-behavior: smooth;
+    }
+
+    /* ---------- Fixed NAV (centered) ---------- */
+    .nav {
+      position: fixed;
+      top: var(--nav-top-gap);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: var(--page-max);
+      min-width: 220px;
+      height: var(--nav-height);
+      background-color: var(--muted);
+      border-radius: 20px;
+      box-shadow: inset 0px 3px 20px 0px #bfbfbf;
+      font-size: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      overflow: hidden;
+      z-index: 1000;
+    }
+
+    .nav span {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      height: 100%;
+      text-align: center;
+      line-height: var(--nav-height);
+      border-radius: 20px;
+      font-family: inherit;
+      margin: 0 10px;
+      transition: background 0.2s, color 0.2s, filter 0.3s, text-shadow 0.3s, transform 0.3s;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+      user-select: none;
+    }
+
+    .nav span:hover {
+      color: #0905ee;
+    }
+
+    .nav span.glass-zoom {
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.10));
+      transform: scale(1.05) perspective(100%) translateZ(8px);
+      font-weight: 600;
+    }
+
+    .nav span.glass-selected {
+      color: #0905ee !important;
+    }
+
+    /* ---------- Glass drop ---------- */
+    .glass-drop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 120px;
+      height: 40px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 60%, rgba(200, 220, 255, 0.18) 100%);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37), 0 1.5px 8px 0 rgba(255, 255, 255, 0.25) inset;
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(220%);
+      border-radius: 24px;
+      border: 2.5px solid rgba(255, 255, 255, 0.25);
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(.4, 2, .6, 1), opacity 0.2s;
+      opacity: 0;
+      z-index: 1;
+      padding: 6px 0;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.10));
+      overflow: visible;
+    }
+
+    .glass-drop::before {
+      content: '';
+      position: absolute;
+      left: 18%;
+      top: 8%;
+      width: 60%;
+      height: 22%;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.1) 100%);
+      border-radius: 50%;
+      filter: blur(1.5px);
+      opacity: 0.7;
+    }
+
+    .glass-drop::after {
+      content: '';
+      position: absolute;
+      right: 10%;
+      bottom: 10%;
+      width: 30%;
+      height: 12%;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-radius: 50%;
+      filter: blur(1.5px);
+      opacity: 0.5;
+    }
+
+    /* ---------- LIGHTS BEHIND TITLE ---------- */
+    /* wrapper behind the title - separate element so it doesn't interfere with title transforms */
+    .title-wrap {
+      position: fixed;
+      top: calc(var(--nav-top-gap) + var(--nav-height) + var(--title-gap));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 820;
+      /* behind title (900) and nav (1000) */
+      pointer-events: none;
+      --light-size: clamp(260px, 36vw, 520px);
+      /* tweak this to change light area size */
+      width: var(--light-size);
+      height: var(--light-size);
+      display: block;
+      margin: -300px auto;
+    }
+
+    /* two blurred radial layers (red & blue) rotate in opposite directions */
+    .title-wrap::before,
+    .title-wrap::after {
+      content: "";
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(0deg);
+      width: 140%;
+      height: 140%;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.55;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .title-wrap::before {
+      /* blue-ish */
+      background: radial-gradient(circle at 30% 30%,
+          rgba(70, 120, 255, 0.95) 0%,
+          rgba(70, 120, 255, 0.45) 25%,
+          rgba(70, 120, 255, 0.12) 45%,
+          transparent 60%);
+      animation: spin 9s linear infinite;
+    }
+
+    .title-wrap::after {
+      /* red-ish */
+      background: radial-gradient(circle at 70% 70%,
+          rgba(255, 60, 90, 0.95) 0%,
+          rgba(255, 60, 90, 0.45) 25%,
+          rgba(255, 60, 90, 0.12) 45%,
+          transparent 60%);
+      animation: spin-rev 12s linear infinite;
+      opacity: 0.5;
+      filter: blur(48px);
+    }
+
+    @keyframes spin {
+      from {
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+
+      to {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
+    @keyframes spin-rev {
+      from {
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+
+      to {
+        transform: translate(-50%, -50%) rotate(-360deg);
+      }
+    }
+
+    /* ---------- Title (fixed above lights) ---------- */
+    .title {
+      position: fixed;
+      top: calc(var(--nav-top-gap) + var(--nav-height) + var(--title-gap));
+      left: 50%;
+      transform: translate(-50%, 0);
+      font-family: 'MyFont', sans-serif;
+      font-size: clamp(36px, 8vw, 90px);
+      text-shadow: -13px 8px 0px rgba(31, 38, 135, 0.12), -5px 3px 6px #4d4d4d;
+      margin: 250px auto;
+      z-index: 900;
+      padding: 6px 14px;
+      background: transparent;
+      transition: transform 0.12s linear, opacity 0.12s linear;
+      will-change: transform, opacity;
+      text-align: center;
+      pointer-events: none;
+      /* clicks pass through */
+      white-space: nowrap;
+    }
+
+    /* Give page top padding so content isn't hidden behind fixed nav/title */
+    main {
+      padding-top: calc(var(--nav-top-gap) + var(--nav-height) + 150px);
+      max-width: var(--page-max);
+      margin: 0 auto;
+      width: 90%;
+    }
+
+    /* ---------- Sections ---------- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 40px 10px;
+    }
+
+    .hero .lead {
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .hero h3 {
+      color: #9fb0ff;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .hero p {
+      color: #ddd;
+      font-size: 1.05rem;
+      margin-bottom: 20px;
+    }
+
+    /* subtle background for hero */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(800px 300px at 10% 10%, rgba(80, 100, 255, 0.03), transparent 10%),
+        radial-gradient(600px 200px at 90% 90%, rgba(255, 200, 180, 0.02), transparent 10%);
+      pointer-events: none;
+    }
+
+    /* Sections layout */
+    section {
+      padding: 70px 0;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 14px;
+      color: #bfc9ff;
+      text-align: center;
+    }
+
+    .cards {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 18px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+      min-height: 120px;
+      color: #eee;
+    }
+
+    /* Contact */
+    .contact-form {
+      display: grid;
+      gap: 10px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      color: #fff;
+      resize: vertical;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #4b6bff, #2146ff);
+      color: #fff;
+      cursor: pointer;
+      border: none;
+      font-weight: 600;
+    }
+
+    /* Footer */
+    footer {
+      padding: 30px 0;
+      text-align: center;
+      color: #9aa3d9;
+    }
+
+    /* ---------- Responsive tweaks ---------- */
+    @media (max-width: 600px) {
+      :root {
+        --nav-top-gap: 12px;
+        --title-gap: 8px;
+      }
+
+      .nav {
+        font-size: 15px;
+        height: 42px;
+        margin-top: 10px;
+      }
+
+      .nav span {
+        margin: 0 6px;
+        line-height: 42px;
+      }
+
+      .glass-drop {
+        border-radius: 14px;
+        height: 32px;
+      }
+
+      main {
+        padding-top: calc(var(--nav-top-gap) + var(--nav-height) + 120px);
+      }
+
+      .title-wrap {
+        --light-size: clamp(420px, 46vw, 360px);
+      }
+
+      .title {
+        font-size: clamp(28px, 10vw, 60px);
+        margin-top: 170px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      :root {
+        --nav-top-gap: 10px;
+        --title-gap: 6px;
+      }
+
+      .nav {
+        font-size: 12px;
+        height: 36px;
+      }
+
+      .nav span {
+        margin: 0 3px;
+        line-height: 36px;
+      }
+
+      .glass-drop {
+        border-radius: 8px;
+        height: 24px;
+      }
+
+      main {
+        padding-top: calc(var(--nav-top-gap) + var(--nav-height) + 100px);
+      }
+
+      .title-wrap {
+        --light-size: clamp(180px, 60vw, 300px);
+      }
+    }
+
+    /* small helper to show sections clearly during dev */
+    .section-inner {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      width: 90%;
+    }
+    a{
+      text-decoration: none;
+      color: #bfc9ff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <div class="nav" role="navigation" aria-label="Main navigation">
+    <div class="glass-drop" id="glassDrop"></div>
+    <!-- data-target links to section ids -->
+    <span data-target="home">Home</span>
+    <span data-target="about">About</span>
+    <span data-target="services">Services
+    </span>
+    <span data-target="team">Team</span>
+    <span data-target="contact">Contact</span>
+  </div>
+
+  <!-- LIGHTS WRAPPER (behind title) -->
+
+  <!-- TITLE (fixed above lights) -->
+  <h1 class="title" id="siteTitle">SYPNOWEB</h1>
+
+  <!-- PAGE CONTENT -->
+  <main>
+    <section id="home" class="hero" aria-label="Hero">
+      <div class="title-wrap" aria-hidden="true"></div>
+      <div class="lead">
+        <h3>Beautiful, fast websites built for you</h3>
+        <p>We design and deliver modern web experiences — responsive, accessible and performance-minded. Click a nav
+          item to jump or scroll to see the title animate.</p>
+        <div style="display:flex; gap:12px; justify-content:center; margin-top:18px;">
+          <button class="btn" onclick="scrollToSection('services')">See services</button>
+          <a href="#contact" style="align-self:center; color:#bfc9ff; text-decoration:none;">Or contact us →</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" aria-label="About">
+      <div class="section-inner">
+        <h2 class="section-title">About SypnoWeb</h2>
+        <p class="section-intro">
+          At <strong>SypnoWeb</strong>, we believe your digital presence is your first impression —
+          and we’re here to make it unforgettable.
+        </p>
+        <p class="section-intro">
+          We are a next-gen web service provider helping businesses and professionals
+          build a powerful online identity. From modern websites to personal portfolios
+          and LinkedIn branding, our goal is simple: craft solutions that elevate your
+          brand and connect you with the right audience.
+        </p>
+
+        <div class="cards">
+          <div class="card">
+            <h3>Design</h3>
+            <p>Beautiful, responsive, and accessible UI/UX crafted from Figma to code.</p>
+          </div>
+          <div class="card">
+            <h3>Development</h3>
+            <p>Custom web apps built with modern tech — fast, SEO-friendly, and scalable.</p>
+          </div>
+          <div class="card">
+            <h3>Deployment</h3>
+            <p>Secure hosting, CI/CD pipelines, SSL, and performance optimization.</p>
+          </div>
+          <div class="card">
+            <h3>Branding</h3>
+            <p>LinkedIn optimization & digital branding strategies that make you stand out.</p>
+          </div>
+        </div>
+
+        <p class="mission">
+          <strong>Our Mission:</strong> To make the web a smarter place by helping people and businesses
+          stand out, grow, and succeed online.
+        </p>
+      </div>
+    </section>
+
+    <section id="services" aria-label="Services">
+      <div class="section-inner">
+        <h2 class="section-title">Services We Offer</h2>
+        <p class="section-intro">
+          At <strong>SypnoWeb</strong>, we provide end-to-end digital solutions to help businesses
+          and professionals build, grow, and manage their online presence.
+        </p>
+
+        <div class="cards">
+          <div class="card">
+            <h3>Web Development</h3>
+            <ul>
+              <li>Custom websites tailored to your brand</li>
+              <li>Responsive, fast, and SEO-friendly design</li>
+              <li>E-commerce and business websites</li>
+              <li>Ongoing support & maintenance</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Portfolio Design</h3>
+            <ul>
+              <li>Professional portfolio websites</li>
+              <li>Creative personal branding pages</li>
+              <li>Digital resumes & CV websites</li>
+              <li>Showcasing skills, achievements, and projects</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>LinkedIn Optimization</h3>
+            <ul>
+              <li>Profile setup & professional makeover</li>
+              <li>SEO-optimized headlines and summaries</li>
+              <li>Content & post strategy for engagement</li>
+              <li>Company page management</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Branding & Identity</h3>
+            <ul>
+              <li>Logo and brand kit design</li>
+              <li>Social media graphics & templates</li>
+              <li>Consistent visual identity across platforms</li>
+              <li>Content design for digital presence</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Add-On Services</h3>
+            <ul>
+              <li>Domain & hosting setup</li>
+              <li>Website performance optimization</li>
+              <li>Security & SSL configuration</li>
+              <li>Analytics integration</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="team" aria-label="Team">
+      <div class="section-inner">
+        <h2 class="section-title">Team</h2>
+        <div class="cards">
+          <div class="card"><strong>Aditya</strong>
+            <p>Founder & full-stack dev.</p>
+          </div>
+          <div class="card"><strong>Design</strong>
+            <p>UI/UX specialist.</p>
+          </div>
+          <div class="card"><strong>DevOps</strong>
+            <p>Deployment & infra.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" aria-label="Contact">
+      <div class="section-inner">
+        <h2 class="section-title">Contact</h2>
+        <p style="text-align:center; color:#d9defa; margin-bottom:12px;">
+        Contact us to discuss your project or get a free quote!
+        </p>
+        
+
+        <!-- Social icons -->
+        <div style="text-align:center; margin-top:20px;">
+          <a href="https://github.com/mihir-aditya" target="_blank"
+            style="margin:0 10px; color:#d9defa; font-size:22px;">
+            <i class="fab fa-github"></i>
+          </a>
+          <a href="https://linkedin.com/in/syphnoweb" target="_blank"
+            style="margin:0 10px; color:#d9defa; font-size:22px;">
+            <i class="fab fa-linkedin"></i>
+          </a>
+          <a href="https://instagram.com/syphnoweb" target="_blank"
+            style="margin:0 10px; color:#d9defa; font-size:22px;">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="mailto:sypnoweb@gmail.com" style="margin:0 10px; color:#d9defa; font-size:22px;">
+            <i class="fas fa-envelope"  ></i><p> Syphnoweb@gmail.com</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div style="max-width:var(--page-max); margin:0 auto; width:90%;">© <span id="year"></span> SYPHNOWEB
+      </div>
+    </footer>
+  </main>
+
+  <!-- ---------- Scripts ---------- -->
+  <script>
+    // set footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ---------- Glass drop interaction + click -> scroll ---------- */
+    const nav = document.querySelector('.nav');
+    const glass = document.getElementById('glassDrop');
+    const spans = Array.from(nav.querySelectorAll('span'));
+    let activeSpan = null;
+
+    function moveGlassToSpan(span) {
+      const rect = span.getBoundingClientRect();
+      const navRect = nav.getBoundingClientRect();
+
+      // responsive padding & drop height
+      let padX = 10, dropHeight = 40;
+      if (window.innerWidth <= 400) { padX = 3; dropHeight = 24; }
+      else if (window.innerWidth <= 600) { padX = 5; dropHeight = 32; }
+
+      glass.style.width = (rect.width + padX * 2) + 'px';
+      glass.style.height = dropHeight + 'px';
+      glass.style.left = (rect.left - navRect.left - padX) + 'px';
+      glass.style.top = (rect.top - navRect.top + (rect.height - dropHeight) / 2) + 'px';
+      glass.style.opacity = 1;
+
+      spans.forEach(s => {
+        s.classList.remove('glass-zoom');
+        s.classList.remove('glass-selected');
+      });
+      span.classList.add('glass-zoom');
+      span.classList.add('glass-selected');
+      activeSpan = span;
+    }
+
+    spans.forEach(span => {
+      span.addEventListener('click', () => {
+        // if data-target present, smooth scroll to that section
+        const target = span.getAttribute('data-target');
+        if (target) {
+          const el = document.getElementById(target);
+          if (el) {
+            // scroll so the section appears nicely under title/nav area
+            const topOffset = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-top-gap')) || 20)
+              + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 50)
+              + 24;
+            const rect = el.getBoundingClientRect();
+            const scrollTop = window.scrollY + rect.top - topOffset;
+            window.scrollTo({ top: scrollTop, behavior: 'smooth' });
+          }
+        }
+        moveGlassToSpan(span);
+      });
+
+      // hover behavior to move glass
+      span.addEventListener('mouseenter', () => moveGlassToSpan(span));
+    });
+
+    // set initial on DOMContentLoaded
+    window.addEventListener('DOMContentLoaded', () => {
+      moveGlassToSpan(spans[0]);
+    });
+
+    // hide glass when leaving nav
+    nav.addEventListener('mouseleave', () => {
+      // restore selected (if any) after small timeout
+      setTimeout(() => {
+        if (activeSpan) moveGlassToSpan(activeSpan);
+        else glass.style.opacity = 0;
+      }, 80);
+    });
+
+    /* ---------- Scroll-based title animation (translateY + fade only) ---------- */
+    /* ---------- Scroll-based title animation (translateY + fade only) ---------- */
+    const title = document.getElementById('siteTitle');
+    const titleWrap = document.querySelector('.title-wrap'); // get the glow container
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    function onScrollTitle() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const percent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+
+      const tY = Math.min(percent * 1.25, 100); // translate down
+      const opacity = clamp(1 - (percent / 30), 0, 1);
+
+      // Move + fade the text
+      title.style.transform = `translate(-50%, ${tY}px)`;
+      title.style.opacity = opacity;
+
+      // Fade + slightly scale the glow to make it blend out
+      if (titleWrap) {
+        titleWrap.style.opacity = opacity;
+        titleWrap.style.transform = `translate(-60%, 80%) scale(${0.9 + opacity * 0.1})`;
+      }
+    }
+
+    // throttle for responsiveness (simple)
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          onScrollTitle();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+    onScrollTitle();
+
+    /* ---------- convenience function for button ---------- */
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const topOffset = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-top-gap')) || 20)
+        + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 50)
+        + 24;
+      const rect = el.getBoundingClientRect();
+      const scrollTop = window.scrollY + rect.top - topOffset;
+      window.scrollTo({ top: scrollTop, behavior: 'smooth' });
+    }
+
+    // Responsive: recalc glass position on resize
+    window.addEventListener('resize', () => { if (activeSpan) moveGlassToSpan(activeSpan); });
+
+  </script>
+</body>
+
+</html>
